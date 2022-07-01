@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 from typing import Tuple, Union, List, Callable
 
 import cv2
@@ -10,25 +11,27 @@ from mediautil.image.img import Img
 class Vid:
     def __init__(
         self,
-        path: Union[str, Path],
+        path: Union[str, Path, int],
         color_mode: str = "bgr",
         size: Tuple[int, int] = None,
         as_img_objects: bool = True,
         with_timestamps: bool = False,
         rotation: int = 0
         # TODO: implement initialization from directory of frames
-        # TODO: implement initialization from stream
     ):
         """
         Wrapper from video-file reading.
         Object is iterable and calls to next(img) returns sequential frames
-        :param path: Path to video file
+        :param path: Path to video file or a int giving mounted usb camera index
         :param color_mode: Desired color mode of returned images
         :param size: Desired size of returned images
         :param as_img_objects: Returned image is Img object if True, numpy array if False
         :param with_timestamps: When iterating, setting this flag will also include the timestamp of the frame in seconds.
         """
-        if not Path(path).exists():
+        self._usb_cam = False
+        if type(path) == int:
+            self._usb_cam = True
+        elif not Path(path).exists():
             raise FileNotFoundError("{} not found".format(path))
         if color_mode not in {"rgb", "bgr"}:
             raise ValueError(
@@ -37,7 +40,7 @@ class Vid:
 
         self.rotation_degrees = rotation
 
-        self.path = str(path)
+        self.path = str(path) if not self._usb_cam else path
         self._color_mode = color_mode
         self.as_img_objects = as_img_objects
         self.with_timestamps = with_timestamps
@@ -96,10 +99,14 @@ class Vid:
         raise StopIteration
 
     def __iter__(self) -> "Vid":
+        if self._usb_cam:
+            return self
         self._cap = cv2.VideoCapture(self.path)
         return self
 
     def __len__(self) -> int:
+        if self._usb_cam:
+            raise ValueError("Cannot call len() on usb camera")
         return self._num_frames
 
     def __str__(self) -> str:
@@ -145,14 +152,19 @@ class Vid:
                 break
         cv2.destroyAllWindows()
 
-    def save_imgs(self, path):
-
+    def save_imgs(self, path, num_frames=None):
+        if self._usb_cam and num_frames:
+            raise ValueError(
+                "Cannot store all images from camera. Provide number of frames"
+            )
         Path.mkdir(Path(path), parents=True, exist_ok=True)
 
-        frame = 0
-        for i in self:
-            i.save(path + "{0:05d}.jpg".format(frame))
-            frame += 1
+        i = 0
+        for frame in self:
+            frame.save(path + "{0:05d}.jpg".format(i))
+            i += 1
+            if num_frames is not None and i >= num_frames:
+                break
 
     def get_frame_selection(
         self, frame_indices: List[int] = None, frame_filter: Callable = None
@@ -163,6 +175,8 @@ class Vid:
         :param frame_filter: Functions which takes a Img or np.ndarray and returns True if the frame is to be returned
         :return: List of np.ndarrays or Img-objects
         """
+        if self._usb_cam:
+            raise ValueError("Cannont get frame indices from live stream")
         frames = []
         if frame_indices is None:
             frame_indices = []
