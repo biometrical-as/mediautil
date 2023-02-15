@@ -20,5 +20,5 @@ setuptools.setup(
     ],
     scripts=["bin/mplayer"],
     entry_points={"console_scripts": ["mediaplayer = mediautil.run:app"]},
-    python_requires=">=3.7",
+    python_requires=">=3.4",
 )
