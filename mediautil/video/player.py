@@ -20,15 +20,15 @@ and adding frames with player.add_frame. When all frames are added, call
 player.wait() to wait for player to be closed. 
 
 Provides simple UI for playback: 
-    q: quit player
-    <space>: pause playback
-    <left arrow>: rewind
-    <right arrow>: move forward (1 frame if paused, 5 if playing)
-    +: increase playback FPS
-    -: decrease playback FPS
-    e: jump to End of buffer
-    b: jump to Begining of buffer
-    m: jump to Middle of buffer
+    q:              quit player
+    <space>:        pause playback
+    <left arrow>:   rewind
+    <right arrow>:  move forward (1 frame if paused, 5 if playing)
+    +: increase     playback FPS
+    -: decrease     playback FPS
+    e:              jump to End of buffer
+    b:              jump to Begining of buffer
+    m:              jump to Middle of buffer
 
 """
 

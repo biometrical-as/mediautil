@@ -32,7 +32,7 @@ class Vid:
         self._usb_cam = False
         if type(path) == int:
             self._usb_cam = True
-        elif path.startswith("rtsp"):
+        elif type(path) == str and path.startswith("rtsp"):
             pass
         elif not Path(path).exists():
             raise FileNotFoundError("{} not found".format(path))
