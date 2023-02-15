@@ -28,7 +28,7 @@ class Vid:
         :param as_img_objects: Returned image is Img object if True, numpy array if False
         :param with_timestamps: When iterating, setting this flag will also include the timestamp of the frame in seconds.
         """
-        self._is_live = not Path(path).exists()
+        self._is_live = type(path) == int or not Path(path).exists()
         self._usb_cam = False
         if type(path) == int:
             self._usb_cam = True
