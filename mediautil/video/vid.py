@@ -1,4 +1,3 @@
-from multiprocessing.sharedctypes import Value
 from typing import Tuple, Union, List, Callable
 
 import cv2
